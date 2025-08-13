@@ -99,7 +99,7 @@
                             {{ form.engine|add_class:"form-control" }}
                             {% if form.engine.errors %}
                                 <div class="invalid-feedback">
-                                    {{ form.engine.errors }
+                                    {{ form.engine.errors }}
                                 </div>
                             {% endif %}
                         </div>
@@ -248,6 +248,134 @@
 {% endblock %}
 {% block extra_js %}
 <script>
-// ... (keep your existing JavaScript for VIN lookup) ...
+document.addEventListener('DOMContentLoaded', function() {
+    // Ensure elements exist before adding listeners
+    const lookupBtn = document.getElementById('lookupBtn');
+    const vinInput = document.getElementById('id_vin_lookup'); // Correct ID from your template
+    const hiddenVinField = document.getElementById('id_vin'); // Correct ID for hidden field
+    const messageDiv = document.getElementById('vinLookupMessage');
+
+    // Debugging: Log if elements are found
+    // console.log("VIN Lookup Elements Found:");
+    // console.log("lookupBtn:", lookupBtn);
+    // console.log("vinInput:", vinInput);
+    // console.log("hiddenVinField:", hiddenVinField);
+    // console.log("messageDiv:", messageDiv);
+
+    // Check if all critical elements are found
+    if (!lookupBtn || !vinInput || !hiddenVinField || !messageDiv) {
+        console.error("VIN Lookup: Required elements (lookupBtn, id_vin_lookup, id_vin, vinLookupMessage) not found in the DOM.");
+        // Hide the lookup section if elements are missing
+        const lookupSection = document.querySelector('.card.mb-4'); // Selects the first card, which should be VIN Lookup
+        if (lookupSection) {
+            // console.log("Hiding VIN Lookup section as elements are missing.");
+            lookupSection.style.display = 'none';
+        }
+        return; // Stop if elements are missing
+    }
+
+    lookupBtn.addEventListener('click', function() {
+        // console.log("Lookup button clicked."); // Debugging log
+        const vin = vinInput.value.trim().toUpperCase();
+        if (!vin) {
+            // console.log("VIN is empty."); // Debugging log
+            messageDiv.innerHTML = '<div class="alert alert-warning alert-dismissible fade show" role="alert">Please enter a VIN.<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>';
+            return;
+        }
+        if (vin.length !== 17) {
+            // console.log("VIN length is not 17."); // Debugging log
+            messageDiv.innerHTML = '<div class="alert alert-warning alert-dismissible fade show" role="alert">VIN must be 17 characters long.<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>';
+            return;
+        }
+
+        // console.log("VIN seems valid, proceeding with lookup:", vin); // Debugging log
+        messageDiv.innerHTML = ''; // Clear previous messages
+        lookupBtn.disabled = true;
+        lookupBtn.textContent = 'Looking up...';
+
+        // Make AJAX request
+        fetch('{% url "vin_lookup" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                // Ensure CSRF token is correctly retrieved
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({vin: vin})
+        })
+        .then(response => {
+            // console.log("Fetch response received, status:", response.status); // Debugging log
+            if (!response.ok) {
+                // Handle non-2xx responses explicitly
+                // console.error('VIN Lookup Network Error Status:', response.status);
+                // Try to get error text
+                return response.text().then(text => {
+                    throw new Error(`Network response was not ok. Status: ${response.status}. Text: ${text}`);
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            // console.log("VIN Lookup Response Data:", data); // Log the response for debugging
+            if (data.success) {
+                const vehicleData = data.data;
+                // console.log("VIN Lookup successful, ", vehicleData); // Debugging log
+                // Set the hidden VIN field
+                hiddenVinField.value = vin;
+                // Populate other fields (ensure IDs match your form fields)
+                if (vehicleData.year !== undefined && vehicleData.year !== null) document.getElementById('id_year').value = vehicleData.year;
+                if (vehicleData.make) document.getElementById('id_make').value = vehicleData.make;
+                if (vehicleData.model) document.getElementById('id_model').value = vehicleData.model;
+                if (vehicleData.trim !== undefined) document.getElementById('id_trim').value = vehicleData.trim || ''; // Use || '' for potentially null/undefined
+                if (vehicleData.engine) document.getElementById('id_engine').value = vehicleData.engine;
+                if (vehicleData.engine_size !== undefined && vehicleData.engine_size !== null) document.getElementById('id_engine_size').value = vehicleData.engine_size;
+                if (vehicleData.fuel_type) document.getElementById('id_fuel_type').value = vehicleData.fuel_type;
+                // Handle transmission
+                if (vehicleData.transmission) {
+                    const transmissionSelect = document.getElementById('id_transmission');
+                    if (transmissionSelect) {
+                        // Normalize the API response value to lowercase for comparison
+                        const apiTransmissionValue = vehicleData.transmission.toLowerCase();
+                        // console.log("Looking for transmission option:", apiTransmissionValue); // Debugging log
+                        // Find the option value that matches the label (e.g., 'automatic' for 'Automatic')
+                        // This assumes your form choices keys match the API response keys (automatic, manual, cvt, etc.)
+                        let optionFound = false;
+                        for (let i = 0; i < transmissionSelect.options.length; i++) {
+                            const optionValue = transmissionSelect.options[i].value.toLowerCase();
+                            // console.log("Checking option value:", optionValue); // Debugging log
+                            if (optionValue === apiTransmissionValue) {
+                                transmissionSelect.value = transmissionSelect.options[i].value;
+                                optionFound = true;
+                                // console.log("Transmission option found and set."); // Debugging log
+                                break;
+                            }
+                        }
+                        if (!optionFound) {
+                            // If no exact match, maybe set to empty or log
+                            // console.warn(`VIN Lookup: Transmission '${vehicleData.transmission}' not found in select options.`);
+                            // Optionally clear selection if no match: transmissionSelect.value = '';
+                        }
+                    }
+                }
+
+                messageDiv.innerHTML = '<div class="alert alert-success alert-dismissible fade show" role="alert">Vehicle information retrieved successfully!<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>';
+            } else {
+                // Use data.error if available, otherwise a generic message
+                const errorMsg = data.error || 'Could not decode VIN. Please check the VIN and try again.';
+                // console.log("VIN Lookup failed with message:", errorMsg); // Debugging log
+                messageDiv.innerHTML = `<div class="alert alert-danger alert-dismissible fade show" role="alert">Error: ${errorMsg}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>`;
+            }
+        })
+        .catch(error => {
+            // console.error('VIN Lookup JavaScript Error:', error);
+            messageDiv.innerHTML = `<div class="alert alert-danger alert-dismissible fade show" role="alert">An error occurred: ${error.message || error}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>`;
+        })
+        .finally(() => {
+            lookupBtn.disabled = false;
+            lookupBtn.textContent = 'Lookup';
+            // console.log("Lookup process finished, button re-enabled."); // Debugging log
+        });
+    });
+});
 </script>
 {% endblock %}
