@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3>{{ title }}</h3>
+                <h5>For: {{ vehicle.year }} {{ vehicle.make }} {{ vehicle.model }}</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form.as_p }} <!-- Simple rendering, can be customized -->
+                    <button type="submit" class="btn btn-primary">Save Service Record</button>
+                    <a href="{% url 'vehicle_detail' vehicle.pk %}" class="btn btn-secondary">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

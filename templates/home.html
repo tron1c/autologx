@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="jumbotron bg-primary text-white p-5 rounded">
+    <h1 class="display-4">Welcome to AutoLogX</h1>
+    <p class="lead">Track and manage your vehicle maintenance history with ease.</p>
+    {% if user.is_authenticated %}
+        <a class="btn btn-light btn-lg" href="{% url 'vehicle_list' %}" role="button">View My Vehicles</a>
+    {% else %}
+        <a class="btn btn-light btn-lg" href="{% url 'signup' %}" role="button">Get Started</a>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,205 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3>{{ title }}</h3>
+            </div>
+            <div class="card-body">
+                <form method="post" id="vehicleForm">
+                    {% csrf_token %}
+                    <!-- VIN Lookup Section -->
+                    <div class="mb-3">
+                        <label for="id_vin_lookup" class="form-label">VIN Lookup</label>
+                        <div class="input-group">
+                            {{ form.vin_lookup }}
+                            <button type="button" class="btn btn-outline-secondary" id="lookupBtn">Lookup</button>
+                        </div>
+                        <div class="form-text">Enter a 17-character VIN to automatically populate vehicle details</div>
+                        <div id="vinLookupMessage" class="mt-2"></div> <!-- For JS messages -->
+                    </div>
+                    <!-- Hidden VIN Field -->
+                    <div class="mb-3">
+                        <label for="id_vin" class="form-label">VIN</label>
+                        {{ form.vin }}
+                    </div>
+                    <!-- Manual Entry Fields -->
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="id_year" class="form-label">Year</label>
+                                {{ form.year }}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="id_make" class="form-label">Make</label>
+                                {{ form.make }}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="id_model" class="form-label">Model</label>
+                                {{ form.model }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="id_trim" class="form-label">Trim</label>
+                                {{ form.trim }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="id_engine" class="form-label">Engine</label>
+                                {{ form.engine }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="id_engine_size" class="form-label">Engine Size (L)</label>
+                                {{ form.engine_size }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="id_fuel_type" class="form-label">Fuel Type</label>
+                                {{ form.fuel_type }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="id_transmission" class="form-label">Transmission</label>
+                                {{ form.transmission }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="id_oil_viscosity" class="form-label">Oil Viscosity</label>
+                                {{ form.oil_viscosity }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="id_current_mileage" class="form-label">Current Mileage</label>
+                        {{ form.current_mileage }}
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="id_stock_tire_size" class="form-label">Stock Tire Size</label>
+                                {{ form.stock_tire_size }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="id_stock_wheel_size" class="form-label">Stock Wheel Size</label>
+                                {{ form.stock_wheel_size }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="id_current_tire_size" class="form-label">Current Tire Size</label>
+                                {{ form.current_tire_size }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="id_current_wheel_size" class="form-label">Current Wheel Size</label>
+                                {{ form.current_wheel_size }}
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Save Vehicle</button>
+                    <a href="{% url 'vehicle_list' %}" class="btn btn-secondary">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const lookupBtn = document.getElementById('lookupBtn');
+    const form = document.getElementById('vehicleForm');
+    const messageDiv = document.getElementById('vinLookupMessage'); // For messages
+    lookupBtn.addEventListener('click', function() {
+        const vinInput = document.getElementById('id_vin_lookup');
+        const vin = vinInput.value.trim().toUpperCase();
+        if (!vin) {
+            // alert('Please enter a VIN');
+            messageDiv.innerHTML = '<div class="alert alert-warning">Please enter a VIN.</div>';
+            return;
+        }
+        if (vin.length !== 17) {
+            // alert('VIN must be 17 characters long');
+            messageDiv.innerHTML = '<div class="alert alert-warning">VIN must be 17 characters long.</div>';
+            return;
+        }
+        // Clear previous messages
+        messageDiv.innerHTML = '';
+        // Disable button and show loading state
+        lookupBtn.disabled = true;
+        lookupBtn.textContent = 'Looking up...';
+        // Make AJAX request to our VIN lookup endpoint
+        fetch('{% url "vin_lookup" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({vin: vin})
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // Populate form fields with decoded data
+                const vehicleData = data.data;
+                // Set the hidden VIN field
+                document.getElementById('id_vin').value = vin;
+                // Populate other fields
+                if (vehicleData.year) document.getElementById('id_year').value = vehicleData.year;
+                if (vehicleData.make) document.getElementById('id_make').value = vehicleData.make;
+                if (vehicleData.model) document.getElementById('id_model').value = vehicleData.model;
+                if (vehicleData.trim) document.getElementById('id_trim').value = vehicleData.trim;
+                if (vehicleData.engine) document.getElementById('id_engine').value = vehicleData.engine;
+                if (vehicleData.engine_size) document.getElementById('id_engine_size').value = vehicleData.engine_size;
+                if (vehicleData.fuel_type) document.getElementById('id_fuel_type').value = vehicleData.fuel_type;
+                if (vehicleData.transmission) document.getElementById('id_transmission').value = vehicleData.transmission;
+                // alert('Vehicle information retrieved successfully!');
+                messageDiv.innerHTML = '<div class="alert alert-success">Vehicle information retrieved successfully!</div>';
+            } else {
+                // alert('Error: ' + data.error);
+                messageDiv.innerHTML = `<div class="alert alert-danger">Error: ${data.error}</div>`;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            // alert('An error occurred while looking up the VIN: ' + error.message);
+            messageDiv.innerHTML = `<div class="alert alert-danger">An error occurred: ${error.message}</div>`;
+        })
+        .finally(() => {
+            // Re-enable button
+            lookupBtn.disabled = false;
+            lookupBtn.textContent = 'Lookup';
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}Delete Vehicle{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3>Delete Vehicle</h3>
+            </div>
+            <div class="card-body">
+                <p>Are you sure you want to delete the vehicle <strong>{{ vehicle.year }} {{ vehicle.make }} {{ vehicle.model }}</strong>?</p>
+                <p class="text-danger">This action cannot be undone and will also delete all associated service records.</p>
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Yes, Delete</button>
+                    <a href="{% url 'vehicle_detail' vehicle.pk %}" class="btn btn-secondary">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

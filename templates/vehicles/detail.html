@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block title %}{{ vehicle.year }} {{ vehicle.make }} {{ vehicle.model }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>{{ vehicle.year }} {{ vehicle.make }} {{ vehicle.model }}</h2>
+    <div>
+        <a href="{% url 'vehicle_edit' vehicle.pk %}" class="btn btn-secondary">Edit</a>
+        <a href="{% url 'vehicle_delete' vehicle.pk %}" class="btn btn-danger">Delete</a>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-6">
+        <h4>Vehicle Details</h4>
+        <table class="table table-striped">
+            <tr><th>VIN</th><td>{{ vehicle.vin|default:"N/A" }}</td></tr>
+            <tr><th>Trim</th><td>{{ vehicle.trim|default:"N/A" }}</td></tr>
+            <tr><th>Engine</th><td>{{ vehicle.engine|default:"N/A" }}</td></tr>
+            <tr><th>Engine Size</th><td>{{ vehicle.engine_size|default:"N/A" }}L</td></tr>
+            <tr><th>Fuel Type</th><td>{{ vehicle.fuel_type|default:"N/A" }}</td></tr>
+            <tr><th>Transmission</th><td>{{ vehicle.get_transmission_display|default:"N/A" }}</td></tr>
+            <tr><th>Oil Viscosity</th><td>{{ vehicle.oil_viscosity|default:"N/A" }}</td></tr>
+            <tr><th>Current Mileage</th><td>{{ vehicle.current_mileage|default:"0" }} miles</td></tr>
+            <tr><th>Last Oil Change</th><td>
+                {% if vehicle.last_oil_change_mileage %}{{ vehicle.last_oil_change_mileage }} miles{% endif %}
+                {% if vehicle.last_oil_change_date %} on {{ vehicle.last_oil_change_date }}{% endif %}
+                {% if not vehicle.last_oil_change_mileage and not vehicle.last_oil_change_date %}N/A{% endif %}
+            </td></tr>
+            <tr><th>Last Service</th><td>
+                {% if vehicle.last_service_mileage %}{{ vehicle.last_service_mileage }} miles{% endif %}
+                {% if vehicle.last_service_date %} on {{ vehicle.last_service_date }}{% endif %}
+                {% if not vehicle.last_service_mileage and not vehicle.last_service_date %}N/A{% endif %}
+            </td></tr>
+            <tr><th>Stock Tire Size</th><td>{{ vehicle.stock_tire_size|default:"N/A" }}</td></tr>
+            <tr><th>Stock Wheel Size</th><td>{{ vehicle.stock_wheel_size|default:"N/A" }}</td></tr>
+            <tr><th>Current Tire Size</th><td>{{ vehicle.current_tire_size|default:"N/A" }}</td></tr>
+            <tr><th>Current Wheel Size</th><td>{{ vehicle.current_wheel_size|default:"N/A" }}</td></tr>
+        </table>
+    </div>
+    <div class="col-md-6">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4>Service History</h4>
+            <a href="{% url 'service_record_create' vehicle.pk %}" class="btn btn-primary">Add Service Record</a>
+        </div>
+        {% if service_records %}
+            <div class="list-group">
+                {% for record in service_records %}
+                    <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h5 class="mb-1">{{ record.get_service_type_display }}</h5>
+                            <small>{{ record.date }}</small>
+                        </div>
+                        <p class="mb-1">{{ record.description|truncatewords:20 }}</p>
+                        <small>Mileage: {{ record.mileage }} miles | Cost: ${{ record.cost }}</small>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>No service records found for this vehicle.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
