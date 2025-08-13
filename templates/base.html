@@ -1,3 +1,4 @@
+<!-- AutoLogX/templates/base.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -14,7 +15,10 @@
             <div class="navbar-nav ms-auto">
                 {% if user.is_authenticated %}
                     <a class="nav-link" href="{% url 'vehicle_list' %}">My Vehicles</a>
-                    <a class="nav-link" href="{% url 'logout' %}">Logout ({{ user.username }})</a>
+                    <form method="post" action="{% url 'logout' %}" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-link nav-link text-white text-decoration-none">Logout ({{ user.username }})</button>
+                    </form>
                 {% else %}
                     <a class="nav-link" href="{% url 'login' %}">Login</a>
                     <a class="nav-link" href="{% url 'signup' %}">Sign Up</a>
