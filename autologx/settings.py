@@ -136,3 +136,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGOUT_REDIRECT_URL = '/'
 LOGIN_REDIRECT_URL = '/'
 # ---------------------------------------------------------------------
+
+# Directory where collectstatic will gather all static files for production
+# Heroku expects this to be set.
+STATIC_ROOT = BASE_DIR / 'staticfiles' # Or os.path.join(BASE_DIR, 'staticfiles')
+
