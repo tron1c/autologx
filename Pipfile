@@ -5,12 +5,12 @@ name = "pypi"
 
 [packages]
 django = "*"
-djangorestframework = "*"
 djangorestframework-simplejwt = "*"
 psycopg2-binary = "*"
 pillow = "*"
 requests = "*"
 django-widget-tweaks = "*"
+djangorestframework = "*"
 
 [dev-packages]
 
