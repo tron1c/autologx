@@ -1,4 +1,4 @@
-# autologx/api/views.py
+# AutoLogX/autologx/api/views.py
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login
@@ -8,7 +8,7 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 import json
 import logging
-from .models import Vehicle, ServiceRecord
+from .models import Vehicle, ServiceRecord, Attachment # Ensure Attachment is imported
 from .forms import VehicleForm, ServiceRecordForm
 from .services import decode_vin
 
@@ -94,11 +94,28 @@ def vehicle_delete(request, pk):
 def service_record_create(request, vehicle_pk):
     vehicle = get_object_or_404(Vehicle, pk=vehicle_pk, user=request.user)
     if request.method == 'POST':
-        form = ServiceRecordForm(request.POST)
+        # Important: Include request.FILES to handle uploaded files
+        form = ServiceRecordForm(request.POST, request.FILES)
         if form.is_valid():
             service_record = form.save(commit=False)
             service_record.vehicle = vehicle
             service_record.save()
+
+            # --- Handle file attachments ---
+            # Get the list of uploaded files from request.FILES
+            uploaded_files = request.FILES.getlist('attachments')
+            for uploaded_file in uploaded_files:
+                # Create an Attachment instance for each file
+                # We'll use a generic title and type for simplicity.
+                # You can enhance this later to allow users to specify title/type per file.
+                Attachment.objects.create(
+                    service_record=service_record,
+                    title=uploaded_file.name[:199], # Truncate filename to fit max_length
+                    attachment_type='other', # Default type
+                    file=uploaded_file
+                )
+            # --- End Handle file attachments ---
+
             messages.success(request, 'Service record added successfully!')
             return redirect('vehicle_detail', pk=vehicle.pk)
     else:
@@ -127,7 +144,7 @@ def vin_lookup(request):
                 return JsonResponse({'success': False, 'error': 'VIN must be 17 characters long'})
             vehicle_data = decode_vin(vin)
             # --- FIXED SYNTAX ERROR HERE ---
-            if vehicle_data: # <--- Corrected condition from 'if vehicle_:'
+            if vehicle_data: # <-- Corrected condition
                 logger.info(f"VIN lookup successful for {vin}")
                 return JsonResponse({'success': True, 'data': vehicle_data})
             else:
