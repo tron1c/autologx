@@ -1,5 +1,173 @@
-/* static/css/custom.css */
-.jumbotron { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 15px; padding: 2rem 1rem; margin-bottom: 2rem; }
-.card { border: 1px solid #3498db; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: transform 0.2s; }
-.card:hover { transform: translateY(-5px); box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
-.form-control:focus { border-color: #3498db; box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25); }
+/* AutoLogX/static/css/custom.css */
+
+/* --- Existing Styles (Improved) --- */
+.jumbotron {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 15px;
+    padding: 2rem 1rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.card {
+    border: 1px solid #3498db;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+    margin-bottom: 1.5rem; /* Add space between cards */
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+/* --- New/Improved Form Styles --- */
+
+/* General Form Container */
+.form-container {
+    max-width: 600px; /* Limit form width for better readability */
+    margin: 2rem auto; /* Center the form */
+    padding: 2rem;
+    background-color: #f8f9fa; /* Light background */
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* Form Headers */
+.form-container h3 {
+    margin-bottom: 1.5rem;
+    color: #2c3e50; /* Darker color for headers */
+    text-align: center;
+}
+
+/* Form Labels */
+.form-label {
+    font-weight: 600; /* Make labels bolder */
+    color: #34495e; /* Slightly darker than default */
+    margin-bottom: 0.5rem;
+}
+
+/* Form Controls (Inputs, Textareas, Selects) */
+.form-control, .form-select {
+    border: 1px solid #ced4da;
+    border-radius: 0.375rem; /* Standard Bootstrap radius */
+    padding: 0.5rem 0.75rem;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+}
+
+/* Invalid Feedback */
+.invalid-feedback {
+    display: block; /* Ensure it's always visible if present */
+    font-size: 0.875em;
+    color: #e74c3c; /* Red for errors */
+    margin-top: 0.25rem;
+}
+
+/* Form Groups (Rows for horizontal forms) */
+.form-group {
+    margin-bottom: 1.25rem;
+}
+
+/* Buttons */
+.btn {
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    border-radius: 0.375rem;
+    transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
+}
+
+.btn-primary {
+    background-color: #3498db;
+    border-color: #3498db;
+}
+
+.btn-primary:hover {
+    background-color: #2980b9;
+    border-color: #2980b9;
+}
+
+.btn-secondary {
+    background-color: #95a5a6;
+    border-color: #95a5a6;
+}
+
+.btn-secondary:hover {
+    background-color: #7f8c8d;
+    border-color: #7f8c8d;
+}
+
+.btn-danger {
+    background-color: #e74c3c;
+    border-color: #e74c3c;
+}
+
+.btn-danger:hover {
+    background-color: #c0392b;
+    border-color: #c0392b;
+}
+
+/* Specific Styles for VIN Lookup Section */
+#vinLookupMessage {
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+/* Alert Styles (for messages and VIN lookup feedback) */
+.alert {
+    border-radius: 0.375rem;
+    padding: 0.75rem 1.25rem;
+    margin-bottom: 1rem;
+}
+
+.alert-warning {
+    background-color: #fff3cd;
+    border-color: #ffeaa7;
+    color: #856404;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+    color: #155724;
+}
+
+.alert-danger {
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
+}
+
+/* Navbar Brand (Slightly larger) */
+.navbar-brand {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+/* Responsive adjustments */
+@media (max-width: 767.98px) {
+    .form-container {
+        padding: 1rem;
+        margin: 1rem;
+    }
+    .jumbotron {
+        padding: 1.5rem 1rem;
+    }
+}
+
+/* Ensure form controls inside input-groups behave well */
+.input-group .form-control {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.input-group .btn {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}

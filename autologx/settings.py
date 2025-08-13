@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'autologx.api', 
     'rest_framework',
+    'widget_tweaks',
 ]
 
 MIDDLEWARE = [
