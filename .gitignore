@@ -131,6 +131,12 @@ dmypy.json
 .idea/
 # VS Code
 .vscode/
+# Vim
+*.swp
+.*.swp
+# General editor backups
+*~
+.#*
 
 # OS generated files
 .DS_Store
